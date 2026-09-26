@@ -8,14 +8,15 @@ PIXEL_WIDTH: i32 : 40
 PIXEL_HEIGHT: i32 : 40
 SCREEN_WIDTH :: 1280
 SCREEN_HEIGHT :: 720
-SCALE: f32 : 32.0
+UNITS_PER_METER: f32 : 32.0
 
 setup :: proc() -> (world_id: box2d.WorldId) {
 	rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Boxes")
 	rl.SetTargetFPS(60)
+	box2d.SetLengthUnitsPerMeter(UNITS_PER_METER)
 
 	box2dWorld := box2d.DefaultWorldDef()
-	box2dWorld.gravity = box2d.Vec2{0, -1.0}
+	box2dWorld.gravity.y = -10.0
 	world_id = box2d.CreateWorld(box2dWorld)
 	return
 }
@@ -34,10 +35,10 @@ create_ground :: proc(world_id: box2d.WorldId) -> (body_id: box2d.BodyId, rect: 
 
 	ground_body_def := box2d.DefaultBodyDef()
 	ground_body_def.type = .staticBody
-	ground_body_def.position = box2d.Vec2{SCREEN_WIDTH / (2 * SCALE), ground_posY / SCALE}
+	ground_body_def.position = box2d.Vec2{SCREEN_WIDTH / (2 * UNITS_PER_METER), ground_posY / UNITS_PER_METER}
 	body_id = box2d.CreateBody(world_id, ground_body_def)
 
-	ground_box := box2d.MakeBox(f32(SCREEN_WIDTH / 2) / SCALE, f32(10.0) / SCALE)
+	ground_box := box2d.MakeBox(f32(SCREEN_WIDTH / 2) / UNITS_PER_METER, f32(10.0) / UNITS_PER_METER)
 	ground_shape_def := box2d.DefaultShapeDef()
 	ground_shape := box2d.CreatePolygonShape(body_id, ground_shape_def, &ground_box)
 	return
@@ -52,10 +53,10 @@ main :: proc() {
 	body_def := box2d.DefaultBodyDef()
 	body_def.type = .dynamicBody
 	body_def.fixedRotation = false
-	body_def.position = box2d.Vec2{f32(400.0) / SCALE, f32(500.0) / SCALE}
+	body_def.position = box2d.Vec2{f32(400.0) / UNITS_PER_METER, f32(500.0) / UNITS_PER_METER}
 	body_id := box2d.CreateBody(world_id, body_def)
 
-	dynamic_box := box2d.MakeBox(f32(20.0) / SCALE, f32(20.0) / SCALE)
+	dynamic_box := box2d.MakeBox(f32(20.0) / UNITS_PER_METER, f32(20.0) / UNITS_PER_METER)
 	shape_def := box2d.DefaultShapeDef()
 	dynamic_shape := box2d.CreatePolygonShape(body_id, shape_def, &dynamic_box)
 
@@ -82,8 +83,8 @@ main :: proc() {
 		}
 
 		v2 := rl.Vector2{f32(PIXEL_WIDTH) / 2.0, f32(PIXEL_HEIGHT) / 2.0}
-		screenX := i32(position.x * SCALE) - i32(PIXEL_WIDTH / 2.0)
-		screenY := SCREEN_HEIGHT - i32(position.y * SCALE) - i32(PIXEL_HEIGHT / 2)
+		screenX := i32(position.x * UNITS_PER_METER) - i32(PIXEL_WIDTH / 2.0)
+		screenY := SCREEN_HEIGHT - i32(position.y * UNITS_PER_METER) - i32(PIXEL_HEIGHT / 2)
 		rl.DrawRectangle(screenX, screenY, PIXEL_WIDTH, PIXEL_HEIGHT, rl.RED)
 
 		rl.EndDrawing()
