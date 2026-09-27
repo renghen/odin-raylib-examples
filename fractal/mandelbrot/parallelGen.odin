@@ -5,7 +5,7 @@ import "core:thread"
 import "core:fmt"
 
 // Data passed to each worker thread
-MandelContext :: struct {
+MandelGenContext :: struct {
 	pixels:     [dynamic]u8,
 	start_row:  u16,
 	upperLeft:  complex32,
@@ -15,8 +15,8 @@ MandelContext :: struct {
 	wg:         ^sync.Wait_Group,
 }
 
-mandel_worker :: proc(t: ^thread.Thread) {
-	ctx := cast(^MandelContext)t.data
+genMandelPointsWorker :: proc(t: ^thread.Thread) {
+	ctx := cast(^MandelGenContext)t.data
 	points := generatePoints(
 		ctx.upperLeft,
 		ctx.lowerRight,
@@ -53,8 +53,8 @@ generatePointsInParallel :: proc(
     defer upperLeftWT -= yDec
 		lowerRightWT := complex32(lowerRightWT) + complex32(imag(upperLeftWT) - imag(yDec)) * complex32(1i)
 		
-		ctx := new(MandelContext)
-		ctx^ = MandelContext {
+		ctx := new(MandelGenContext)
+		ctx^ = MandelGenContext {
 			pixels     = points,
 			start_row  = start_row,
 			upperLeft  = upperLeftWT,
@@ -63,7 +63,7 @@ generatePointsInParallel :: proc(
 			width      = width,
 			wg         = &wg,
 		}		
-		t := thread.create(mandel_worker)
+		t := thread.create(genMandelPointsWorker)
 		t.data = ctx
 
 		sync.wait_group_add(&wg, 1)
